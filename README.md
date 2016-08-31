@@ -1,6 +1,10 @@
-# forms
+# Forms
 
-> Forms prototyping project
+> Vue.js prototyping components for generating front-ent web forms
+> with different input types, layouts options, fieldsets grouping, 
+> validation and more
+
+![alt text](https://dl.dropboxusercontent.com/u/1207859/vuejsforms.png "Screenshot")
 
 ## Build Setup
 
