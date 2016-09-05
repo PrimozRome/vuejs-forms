@@ -14,7 +14,7 @@
         :readonly="readonly"
         :disabled="disabled"
         @blur="blur"
-        v-model="input">
+        @input="onInput">
       </textarea>
       <span 
         class="input-group-addon add-on" 

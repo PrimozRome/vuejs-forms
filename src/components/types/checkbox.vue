@@ -8,15 +8,15 @@
         <div :class="subType" v-for="(option, index) in options">
           <input 
             type="checkbox" 
-            :id="name+index"
+            :id="id+'-'+index"
             :name="name"
             :value="option"
             :required="required" 
             :readonly="readonly"
             :disabled="disabled"
-            v-model="input"
-            @blur="blur">
-          <label :for="name+index">{{ option }}</label>
+            @blur="blur"
+            @change="onInput">
+          <label :for="id+'-'+index">{{ option }}</label>
         </div>
       </div>
       <span 
@@ -40,6 +40,11 @@ import inputMixin from './inputMixin.js'
 export default {
   name: 'CheckboxInput', 
   mixins: [inputMixin],
+  data: function () {
+    return {
+      selectedValues: []
+    }
+  },
   props: {
     /*
     * Form field initial value, overriden from mixin because here can be array
@@ -47,7 +52,9 @@ export default {
     value: {
       type: Array,
       required: false,
-      default: []
+      default: function () {
+        return []
+      }
     },
     /*
     * CSS class that floats checkboxes horizontaly (radio-input-horizontal)
@@ -63,15 +70,9 @@ export default {
     options: {
       type: Array,
       required: true,
-      default: []
-    },
-    /*
-    * Initilly selected value 
-    */
-    selected: {
-      type: Array,
-      required: false,
-      default: []
+      default: function () {
+        return []
+      }
     },
     /*
     * CSS class for radio 
@@ -82,8 +83,16 @@ export default {
       default: ''
     }
   },
-  created: function () {
-    this.input = this.selected
+  methods: {
+    onInput (e) {
+      let val = event.target.value,
+          index = this.value.indexOf(val)
+      if (index === -1)
+        this.selectedValues.push(val)
+      else
+        this.selectedValues.splice(index, 1)
+      this.$emit('input', this.selectedValues)
+    }
   }
 }
 </script>

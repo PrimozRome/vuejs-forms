@@ -4,49 +4,90 @@
 * - rendering form layouts
 * - form validation
 *
-* FORM TYPES
+* FIELD TYPES
 * - check component for props for each form type
 *
-* VALIDATION
+* FIELD VALIDATION
 * - required: true => required validation
 * - email: true => email validation
-*    length: 6 => string must be exactly 6 characters long
-*    minlegth: 6 => string must be at list 6 characters long
-*    maxlength: 6 => string must be max 6 characters long
+*    length: 6 => '' must be exactly 6 characters long
+*    minlegth: 6 => '' must be at list 6 characters long
+*    maxlength: 6 => '' must be max 6 characters long
 * - numerical: true => numbers only
 *     integer: true => integer only, required
 *     min: 0 => minmum value
 *     max: 100 => maximum value
 * - date => TODO
 *
-* LAYOUT
-* - 
-**/
+* FORM LAYOUTs
+* - layouts: set of different defined layouts
+* - name: Filedset display name
+* - collapsed: if this fieldset is collaped
+* - rows: definitiion of field by row and column class
+*/
 
 export default {
-  groups: {
-    basic: {
-      name: 'Basic information',
-      collapsed: false
-    },
-    contact: {
-      name: 'Contact information',
-      collapsed: true,
-    },
-    administration: {
-      name: 'Administration data',
-      collapsed: true
+  layouts: {
+    general: {
+      basic: {
+        name: 'Basic information',
+        collapsed: true,
+        rows: [
+          {
+            firstname: 'col-sm-6',
+            lastname: 'col-sm-6'
+          },
+          {
+            email: 'col-xs-12'
+          },
+          {
+            password: 'col-sm-6',
+            passwordConfirm: 'col-sm-6'
+          }
+        ]
+      },
+      contact: {
+        name: 'Contact information',
+        collapsed: false,
+        rows: [
+          {
+            addresses: 'col-xs-12',
+          }
+        ]
+      },
+      administration: {
+        name: 'Administration data',
+        collapsed: true,
+        rows: [
+          {
+            orderType: 'col-xs-12'
+          },
+          {
+            heroes: 'col-xs-12'
+          },
+          {
+            currency: 'col-xs-12'
+          },
+          {
+            description: 'col-xs-12'
+          },
+          {
+            dateBirth: 'col-xs-12'
+          }
+        ]
+      }
     }
   },
   fields: {
     firstname: {
-      type: 'text',
-      subType: 'text',
+      type: 'TextInput',
+      subtype: 'TextInput',
       label: 'Firstname',
       placeholder: 'Enter customer\'s firstname',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      save: 'profiles.firstname',
       validation: {
         required: {
           rule: true,
@@ -55,46 +96,34 @@ export default {
         minlength: {
           rule: 4,
           error: 'Firstname must be at list 4 characters long.'
-        },
-      },
-      layout: {
-        group: 'basic',
-        col: 'col-sm-6',
-        row: 1
+        }
       }
     },
     lastname: {
-      type: 'text',
-      subType: 'text',
+      type: 'TextInput',
+      subtype: 'TextInput',
       label: 'Lastname',
       placeholder: 'Enter customer\'s lastname',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      save: 'profiles.lastname',
       validation: {
         required: {
           rule: true,
           error: 'Please enter lastname.'
-        },
-        minlength: {
-          rule: 4,
-          error: 'Lastname must be at list 4 characters long.'
-        },
-      },
-      layout: {
-        group: 'basic',
-        col: 'col-sm-6',
-        row: 1
+        }
       }
     },
     email: {
-      type: 'text',
+      type: 'TextInput',
       subType: 'email',
       label: 'E-mail',
       placeholder: 'Enter customer\'s email',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      save: 'users.email',
       validation: {
         required: {
           rule: true,
@@ -104,21 +133,18 @@ export default {
           rule: true,
           error: 'Please enter valid email.'
         },
-      },
-      layout: {
-        group: 'basic',
-        col: 'col-sm-12',
-        row: 2
       }
     },
     password: {
-      type: 'text',
+      type: 'TextInput',
       subType: 'password',
       label: 'Password',
       placeholder: 'Enter password',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      canSave: false,
+      save: 'users.password',
       validation: {
         required: {
           rule: true,
@@ -128,21 +154,17 @@ export default {
           rule: 6,
           error: 'Password must be at list 6 characters long.'
         },
-      },
-      layout: {
-        group: 'basic',
-        col: 'col-sm-6',
-        row: 3
       }
     },
     passwordConfirm: {
-      type: 'text',
+      type: 'TextInput',
       subType: 'password',
       label: 'Confirm password',
       placeholder: 'Confirm password',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      save: 'users.password_confirm',
       validation: {
         required: {
           rule: true,
@@ -156,88 +178,143 @@ export default {
           rule: 'password',
           error: 'Passwords do not match.'
         }
-      },
-      layout: {
-        group: 'basic',
-        col: 'col-sm-6',
-        row: 3
       }
     },
-    orderType: {
-      type: 'radio',
-      subType: '',
-      label: 'Type',
-      readonly: false,
-      disabled: false,
-      value: 'Poldi polenta',
-      selected: 'Poldi polenta',
-      options: ['Faker', 'Zeeeee', 'Poldi polenta', 'Hrabri misek', 'Batman', 'Looney tunes', 'Pisuka poldi'],
-      css: 'radio-success',
+    addresses: {
+      type: 'MultipleInput',
+      label: 'Addresses',
+      save: 'addresses',
+      dataType: [],
+      rows: [
+        {
+          address: 'col-lg-4 col-sm-8',
+          post: 'col-lg-2 col-sm-4',
+          city: 'col-lg-3 col-sm-6',
+          country: 'col-lg-3 col-sm-6'
+        }
+      ],
       validation: {
         required: {
           rule: true,
-          error: 'Please enter firstname.'
+          error: 'Please enter address.'
         }
-      },
-      layout: {
-        group: 'administration',
-        col: 'col-sm-12',
-        row: 1
       }
     },
-    heroes: {
-      type: 'checkbox',
-      subType: '',
-      label: 'Select heroes',
+    address: {
+      type: 'TextInput',
+      subtype: 'TextInput',
+      label: 'Address',
+      placeholder: 'Enter address',
       readonly: false,
       disabled: false,
-      value: ['Batman'],
-      selected: ['Batman'],
-      options: ['Hrabri misek', 'Batman', 'Looney tunes', 'Pisuka poldi'],
-      css: 'check-success',
+      dataType: '',
+      save: 'addresses.address',
       validation: {
         required: {
           rule: true,
-          error: 'Please enter firstname.'
+          error: 'Please enter address.'
         }
-      },
-      layout: {
-        group: 'contact',
-        col: 'col-sm-12',
-        row: 2
       }
     },
-    countries: {
-      type: 'select',
+    post: {
+      type: 'TextInput',
+      subtype: 'TextInput',
+      label: 'Post',
+      placeholder: 'Enter post number',
+      readonly: false,
+      disabled: false,
+      dataType: '',
+      save: 'addresses.post',
+      validation: {
+        required: {
+          rule: true,
+          error: 'Please enter post.'
+        },
+        numerical: {
+          rule: true,
+          onlyInteger: true,
+          min: 1000,
+          max: 9999,
+          error: 'Please enter valid post number.'
+        },
+      }
+    },
+    city: {
+      type: 'TextInput',
+      subtype: 'TextInput',
+      label: 'City',
+      placeholder: 'Enter city number',
+      readonly: false,
+      disabled: false,
+      dataType: '',
+      save: 'addresses.city',
+      validation: {
+        required: {
+          rule: true,
+          error: 'Please enter city.'
+        }
+      }
+    },
+    country: {
+      type: 'SelectInput',
       label: 'Country',
       placeholder: 'Select country',
       readonly: false,
       disabled: false,
-      value: 'Slovenia',
-      addon: 'EUR',
+      dataType: '',
       options: ['Austria', 'Croatia', 'Slovenia', 'Zimbabwe'],
-      selected: 'Slovenia',
+      save: 'addresses.country_id',
       validation: {
         required: {
           rule: true,
           error: 'Please enter firstname.'
         }
-      },
-      layout: {
-        group: 'contact',
-        col: 'col-sm-12',
-        row: 1
+      }
+    },
+    orderType: {
+      type: 'RadioInput',
+      subType: '',
+      label: 'Type',
+      readonly: false,
+      disabled: false,
+      dataType: '',
+      options: ['Faker', 'Zeeeee', 'Poldi polenta', 'Hrabri misek', 'Batman', 'Looney tunes', 'Pisuka poldi'],
+      css: 'radio-success',
+      save: 'misc.order_type',
+      validation: {
+        required: {
+          rule: true,
+          error: 'Please select order type.'
+        }
+      }
+    },
+    heroes: {
+      type: 'CheckboxInput',
+      subType: '',
+      label: 'Select heroes',
+      readonly: false,
+      disabled: false,
+      dataType: [],
+      options: ['Hrabri misek', 'Batman', 'Looney tunes', 'Pisuka poldi'],
+      css: 'check-success',
+      save: 'misc.heroes',
+      validation: {
+        required: {
+          rule: true,
+          error: 'Please pick your heroes.'
+        }
       }
     },
     currency: {
-      type: 'text',
+      type: 'TextInput',
       subType: 'number',
       label: 'Currency',
       placeholder: 'Enter total amount',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
       addon: 'EUR',
+      save: 'misc.currency',
       validation: {
         required: {
           rule: true,
@@ -250,42 +327,33 @@ export default {
           max: 100,
           error: 'Please enter valid currency.'
         },
-      },
-      layout: {
-        group: 'administration',
-        col: 'col-sm-12',
-        row: 3
       }
     },
     description: {
-      type: 'textarea',
+      type: 'TextareaInput',
       label: 'Description',
       placeholder: 'Your notes',
       rows: 6,
-      addon: 'EUR',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      save: 'misc.description',
       validation: {
         required: {
           rule: true,
           error: 'Please enter firstname.'
         }
-      },
-      layout: {
-        group: 'administration',
-        col: 'col-sm-12',
-        row: 4
       }
     },
     dateBirth: {
-      type: 'text',
+      type: 'TextInput',
       subType: 'date',
       label: 'Birthday',
       placeholder: 'Enter customer\'s birth date',
       readonly: false,
       disabled: false,
-      value: '',
+      dataType: '',
+      save: 'misc.employments',
       validation: {
         required: {
           rule: true,
@@ -295,11 +363,6 @@ export default {
           rule: true,
           error: 'Please enter valid date.'
         }
-      },
-      layout: {
-        group: 'administration',
-        col: 'col-sm-12',
-        row: 5
       }
     }
   }

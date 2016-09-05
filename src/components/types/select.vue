@@ -2,18 +2,18 @@
   <div>
     <div 
       class="form-group form-group-default input-select overflow-visible" 
-      :class="{ 'input-group': inplaceSave || addon, 'inplace-save': inplaceSave, 'required': required, 'disabled': disabled, 'has-error': !valid }">
+      :class="{ 'input-group': inplaceSave || addon, 'inplace-save': inplaceSave, 'input-addon': addon, 'required': required, 'disabled': disabled, 'has-error': !valid }">
       <label>{{ label }}</label>
       <div class="select2-container select2-container-multi full-width">
         <multiselect
           :name="name"
+          :options="options"
+          :selected="value"
           class="form-control textarea" 
           :class="{ 'has-error': !valid }"
           :placeholder="placeholder" 
           :readonly="readonly"
           :disabled="disabled"
-          :selected="selected"
-          :options="options"
           @update="updateSelected"
           @close="blur">
         </multiselect>
@@ -56,24 +56,12 @@ export default {
       type: Array,
       required: true,
       default: []
-    },
-    /*
-    * Initilly selected option 
-    */
-    selected: {
-      type: String,
-      required: false,
-      default: ''
     }
   },
   methods: {
     updateSelected (value) {
-      this.input = value
-      this.$emit('change', this.name, this.input)
+      this.$emit('input', value)
     }
-  },
-  created: function () {
-    this.input = this.selected
   }
 }
 </script>

@@ -14,8 +14,8 @@
             :required="required" 
             :readonly="readonly"
             :disabled="disabled"
-            v-model="input"
-            @blur="blur">
+            @blur="blur"
+            @change="onInput">
           <label :for="name+index">{{ option }}</label>
         </div>
       </div>
@@ -58,14 +58,6 @@ export default {
       default: []
     },
     /*
-    * Initilly selected value 
-    */
-    selected: {
-      type: String,
-      required: false,
-      default: ''
-    },
-    /*
     * CSS class for radio 
     */
     css: {
@@ -73,9 +65,6 @@ export default {
       required: false,
       default: ''
     }
-  },
-  created: function () {
-    this.input = this.selected
   }
 }
 </script>

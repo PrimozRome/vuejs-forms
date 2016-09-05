@@ -3,10 +3,12 @@
     <div 
       class="form-group form-group-default" 
       :class="{ 'input-group': inplaceSave || addon, 'inplace-save': inplaceSave, 'input-addon': addon, 'required': required, 'disabled': disabled, 'has-error': !valid }">
-      <label>{{ label }}</label>
+      <label :for="id">{{ label }}</label>
       <input 
-        :type="subType" 
+        :id="id"
         :name="name"
+        :value="value"
+        :type="subType" 
         class="form-control" 
         :class="{ 'has-error': !valid }"
         :required="required" 
@@ -14,7 +16,7 @@
         :readonly="readonly"
         :disabled="disabled"
         @blur="blur"
-        v-model="input">
+        @input="onInput">
       <span 
         v-if="addon"
         class="input-group-addon add-on">

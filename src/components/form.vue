@@ -1,126 +1,58 @@
 <template>
-  <div>
-    <form @submit.prevent="submit" novalidate>
-      <fieldset v-for="(fieldset, fieldsetKey, index) in fieldSets">        
-        <legend>
-          <button
-            class="btn btn-success btn-xs btn-collapse"
-            @click.prevent="toggleFieldset(index)">
-              <i class="fa fa-plus" v-if="fieldSetsState[index]"></i>
-              <i class="fa fa-minus" v-else></i>
-          </button>
-          {{ fieldset.name }}
-        </legend>
-        
+  <form @submit.prevent="submit" novalidate>
+    <fieldset v-for="(fieldset, fieldsetKey, index) in layout">        
+      <legend>
+        <button
+          class="btn btn-success btn-xs btn-collapse"
+          @click.prevent="toggleFieldset(index)">
+            <i class="fa fa-plus" v-if="layoutState[index]"></i>
+            <i class="fa fa-minus" v-else></i>
+        </button>
+        {{ fieldset.name }}
+      </legend>
+      
+      <div v-show="!layoutState[index]">
         <div 
           class="row" 
-          v-show="!fieldSetsState[index]"
-          v-for="row in getMaxRowsForFieldset(fieldsetKey)">
-          <div :class="field.layout.col" v-for="(field, fieldName, index) in getColsForRowInGroup(row, fieldsetKey)">
-            <text-input 
-              v-if="field.type === 'text'"
-              :sub-type="field.subType"
+          v-for="(row, index) in fieldset.rows">
+          <div :class="colClass" v-for="(colClass, fieldName, index) in row">
+            <component 
+              v-model="fieldsData[fieldName].value"
+              :is="fields[fieldName].type"
               :name="fieldName"
-              :label="field.label"
-              :placeholder="field.placeholder"
-              :value="field.value"
-              :disabled="field.disabled"
-              :readonly="field.readonly"
-              :addon="field.addon"
-              :validation="field.validation"
-              :update-mode="updateMode"
+              :sub-type="fields[fieldName].subType"
+              :label="fields[fieldName].label"
+              :placeholder="fields[fieldName].placeholder"
+              :disabled="fields[fieldName].disabled"
+              :readonly="fields[fieldName].readonly"
+              :addon="fields[fieldName].addon"
+              :validation="fields[fieldName].validation"
+              :can-save="fields[fieldName].canSave"
+              :options="fields[fieldName].options"
+              :css="fields[fieldName].css"
+              :rows="fields[fieldName].rows"
+              :fields="fields"
               :fields-data="fieldsData"
-              @change="change"
-              @validate="validate"
-              @save="inplaceSave">
-            </text-input>
-            
-            <textarea-input 
-              v-if="field.type === 'textarea'"
-              :name="fieldName"
-              :label="field.label"
-              :placeholder="field.placeholder"
-              :value="field.value"
-              :rows="field.rows"
-              :disabled="field.disabled"
-              :readonly="field.readonly"
-              :addon="field.addon"
-              :validation="field.validation"
               :update-mode="updateMode"
-              :fields-data="fieldsData"
-              @change="change"
               @validate="validate"
-              @save="inplaceSave">
-            </textarea-input>
-
-            <select-input
-              v-if="field.type === 'select'"
-              :name="fieldName"
-              :label="field.label"
-              :placeholder="field.placeholder"
-              :value="field.value"
-              :disabled="field.disabled"
-              :readonly="field.readonly"
-              :selected="field.selected"
-              :options="field.options"
-              :validation="field.validation"
-              :update-mode="updateMode"
-              :fields-data="fieldsData"
-              @change="change"
-              @validate="validate"
-              @save="inplaceSave">
-            </select-input>
-          
-            <radio-input
-              v-if="field.type === 'radio'"
-              :sub-type="field.subType"
-              :name="fieldName"
-              :label="field.label"
-              :value="field.value"
-              :disabled="field.disabled"
-              :readonly="field.readonly"
-              :selected="field.selected"
-              :options="field.options"
-              :css="field.css"
-              :validation="field.validation"
-              :update-mode="updateMode"
-              :fields-data="fieldsData"
-              @change="change"
-              @validate="validate"
-              @save="inplaceSave">
-            </radio-input>
-
-            <checkbox-input
-              v-if="field.type === 'checkbox'"
-              :sub-type="field.subType"
-              :name="fieldName"
-              :label="field.label"
-              :value="field.value"
-              :disabled="field.disabled"
-              :readonly="field.readonly"
-              :selected="field.selected"
-              :options="field.options"
-              :css="field.css"
-              :validation="field.validation"
-              :update-mode="updateMode"
-              :fields-data="fieldsData"
-              @change="change"
-              @validate="validate"
-              @save="inplaceSave">
-            </checkbox-input>
+              @save="inplaceSave">                
+            </component>
           </div>
         </div>
-      </fieldset>
-    </form>
-  </div>
+      </div>
+    </fieldset>
+    <button class="btn btn-primary" type="submit" @click.prevent="save">Create a new user</button>
+  </form>
 </template>
 
 <script>
+import Vue from 'vue'
 import TextInput from './types/text.vue'
 import TextareaInput from './types/textarea.vue'
 import SelectInput from './types/select.vue'
 import RadioInput from './types/radio.vue'
 import CheckboxInput from './types/checkbox.vue'
+import MultipleInput from './types/multiple.vue'
 
 export default {
   name: 'Form',
@@ -130,14 +62,15 @@ export default {
     TextareaInput,
     SelectInput,
     RadioInput,
-    CheckboxInput
+    CheckboxInput,
+    MultipleInput
   },
 
   data: function () {
     return {
       updateMode: true,
       fieldsData: {},
-      fieldSetsState: []
+      layoutState: []
     }
   },
 
@@ -157,14 +90,16 @@ export default {
   },
 
   props: {
-    fieldSets: {
+    /* Form fields layout */
+    layout: {
       type: Object,
       required: true,
       default: function () {
         return {}
       }
     },
-    formFields: {
+    /* Form fields */
+    fields: {
       type: Object,
       required: true,
       default: function () {
@@ -174,55 +109,24 @@ export default {
   },
 
   methods: {
-    getMaxRowsForFieldset (fieldsetKey) {
-      let max = 0,
-          formFields = this.formFields
-      for (var key in formFields) {
-        if (formFields[key].hasOwnProperty('layout')) {
-          if (formFields[key].layout.group === fieldsetKey) {
-            if (formFields[key].layout.row > max) {
-              max = formFields[key].layout.row
-            }
-          }
-        }
-      }
-      return max
-    },
-    getColsForRowInGroup (row, fieldsetKey) {
-      let formFields = this.formFields,
-          cols = {}
-      for (var key in formFields) {
-        if (formFields[key].hasOwnProperty('layout')) {
-          if (formFields[key].layout.group === fieldsetKey) {
-            if (formFields[key].layout.row === row) {
-              cols[key] = formFields[key]
-            }
-          }
-        }
-      }
-      return cols
-    },
     getDataFields () {
-      for(var fieldName in this.formFields) {
-        this.fieldsData[fieldName] = {
+      let fields = this.fields
+      for(var fieldName in this.fields) {
+        this.$set(this.fieldsData, fieldName, {
           valid: false,
-          value: ''
-        }
+          value: (fields[fieldName].dataType.constructor === Array) ? [] : ''
+        })
       }
     },
-    getFieldSetState () {
-      for(var fieldset in this.fieldSets)
-        this.fieldSetsState.push(this.fieldSets[fieldset].collapsed)
+    getlayoutState () {
+      for(var fieldset in this.layout)
+        this.layoutState.push(this.layout[fieldset].collapsed)
     },
     toggleFieldset (index) {
-      this.$set(this.fieldSetsState, index, !this.fieldSetsState[index])
+      this.$set(this.layoutState, index, !this.layoutState[index])
     },
     getFildsetState(state, index) {
-      return this.fieldSetsState[index]
-    },
-    change (fieldName, value) {
-      this.fieldsData[fieldName]['value'] = value
-      this.$emit('change', fieldName, value)
+      return this.layoutState[index]
     },
     validate (fieldName, valid) {
       this.fieldsData[fieldName]['valid'] = valid
@@ -233,23 +137,52 @@ export default {
       console.log(data)
     },
     save (e) {
-      this.$emit('save')
-      var data = {}
-      for(var fieldName in this.fieldsData) {
-        data[fieldName] = this.fieldsData[fieldName]['value']
+      let data = {}
+      for (var fieldName in this.fieldsData) {
+        let key = this.fields[fieldName].save
+        let value = this.fieldsData[fieldName]['value']
+        this.stringToObj(key, value, data)
       }
+      this.$emit('save')
       console.log(data)
     },
+    stringToObj (key, value, obj) {
+      var parts = key.split("."), part
+      var last = parts.pop()
+      while(part = parts.shift()) {
+        if( typeof obj[part] != "object") obj[part] = {}
+        obj = obj[part]
+      }
+      obj[last] = value
+    },
+    fetchData () {
+      let fieldsData = this.fieldsData
+      setTimeout(function () {
+        for(var fieldName in fieldsData) {
+          let val = (this.fieldsData[fieldName].value.constructor === Array) ? ['Batman'] : 'Juhuhuhu'
+          this.$set(fieldsData[fieldName], 'value', val)
+        }
+      }.bind(this), 5000)
+    }
   },
 
   created: function () {
     this.getDataFields()
-    this.getFieldSetState()
+    this.getlayoutState()
+    // this.fetchData()
   }
 }
 </script>
 
 <style>
+/* Change the white to any color ;) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active,
+input:-webkit-autofill:focus {
+  background-color: #FFFFFF !important;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+}
 .form-group.has-error {
   margin-bottom: 5px;
 }
@@ -282,5 +215,10 @@ export default {
 }
 .input-group.inplace-save.input-addon.required:after {
   right:120px;
+}
+
+.panel.panel-form {
+  background-color: rgba(255, 255, 255, 0.6);
+  margin-bottom: -1px;
 }
 </style>

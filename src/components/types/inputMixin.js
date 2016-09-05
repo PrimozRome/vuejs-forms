@@ -3,18 +3,27 @@ import { validate } from '../../services/validation.js';
 export default {
   data: function () {
     return {
-      input: '',
+      initialValue: null,
+      id: 'input-' + this.name,
       inputValidation: {},
       touched: false
     }
   },
   props: {
     /*
-    * Input name attribute
+    * Form input name
     */
     name: {
       type: String,
       required: true
+    },
+    /*
+    * Form field initial value
+    */
+    value: {
+      type: String,
+      required: false,
+      default: ''
     },
     /*
     * Form field label text
@@ -49,12 +58,12 @@ export default {
       default: false
     },
     /*
-    * Form field initial value
+    * If field can display inplace save
     */
-    value: {
-      type: String,
+    canSave: {
+      type: Boolean,
       required: false,
-      default: ''
+      default: true
     },
     /*
     * Form field should have an addon
@@ -102,30 +111,26 @@ export default {
       })
     },
     dirty: function () {
-      if (this.input.constructor === Array)
-        return !this.value.equals(this.input)
+      if (this.value.constructor === Array)
+        return !this.value.equals(this.initialValue)
       else
-        return this.value !== this.input
+        return this.value !== this.initialValue
     },
     pristine: function () {
-      if (this.input.constructor === Array)
-        return this.value.equals(this.input)
+      if (this.value.constructor === Array)
+        return this.value.equals(this.initialValue)
       else
-        return this.value === this.input
+        return this.value === this.initialValue
     },
     required: function () {
-      return ('required' in this.validation) ? this.validation.required : false
+      return ('required' in this.validation) ? this.validation.required.rule : false
     },
     inplaceSave: function () {
-      return (this.updateMode && this.dirty && this.valid)
+      return (this.canSave && this.updateMode && this.dirty && this.valid)
     }
   },
-  created: function () {
-    this.input = this.value
-  },
   watch: {
-    'input': function(val, oldVal) {
-      this.$emit('change', this.name, this.input)
+    'value': function(val, oldVal) {
       this.validate()
     }
   },
@@ -134,17 +139,24 @@ export default {
       this.validate()
       this.touched = true
     },
+    onInput (e) {
+      this.$emit('input', event.target.value)
+    },
     getFirstValidationError () {
       for (var validator in this.inputValidation) {
-        if (this.inputValidation[validator]) return this.inputValidation[validator][this.name][0]
+        if (this.inputValidation[validator]) 
+          return this.inputValidation[validator][this.name][0]
       }
     },
     validate () {
-      this.inputValidation = validate(this.validation, this.name, this.input, this.fieldsData)
+      this.inputValidation = validate(this.validation, this.name, this.value, this.fieldsData)
       this.$emit('validate', this.name, this.valid)
     },
     save (e) {
-      this.$emit('save', this.name, this.input)
+      this.$emit('save', this.name, this.value)
     }
+  },
+  created: function () {
+    this.initialValue = this.value
   }
 }
